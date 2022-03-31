@@ -27,12 +27,18 @@ export class UsersService {
     await this.userModel.create({ name, email, password });
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(): Promise<User[]> {
+    const users = await this.userModel.find();
+
+    return users;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const user = await this.userModel.findOne({
+      _id: id,
+    });
+
+    return user;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
