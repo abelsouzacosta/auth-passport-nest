@@ -21,6 +21,16 @@ export class UsersService {
       );
   }
 
+  private async ifUserNotExistsThorwsException(id: string): Promise<void> {
+    const userExists = await this.userModel.findOne({ _id: id });
+
+    if (!userExists)
+      throw new HttpException(
+        `User with given id #${id} was not found`,
+        HttpStatus.NOT_FOUND,
+      );
+  }
+
   async create({ name, email, password }: CreateUserDto): Promise<void> {
     await this.ifEmailAlreadyTakenThrowsException(email);
 
@@ -41,8 +51,12 @@ export class UsersService {
     return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, { name, email }: UpdateUserDto) {
+    await this.ifUserNotExistsThorwsException(id);
+
+    await this.ifEmailAlreadyTakenThrowsException(email);
+
+    await this.userModel.updateOne({ _id: id }, { $set: { name, email } });
   }
 
   remove(id: number) {
