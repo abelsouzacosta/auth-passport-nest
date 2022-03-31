@@ -59,7 +59,9 @@ export class UsersService {
     await this.userModel.updateOne({ _id: id }, { $set: { name, email } });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    await this.ifUserNotExistsThorwsException(id);
+
+    await this.userModel.deleteOne({ _id: id });
   }
 }
