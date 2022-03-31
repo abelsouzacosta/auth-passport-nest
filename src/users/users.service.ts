@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -9,7 +9,21 @@ import { User } from './entities/user.entity';
 export class UsersService {
   constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
 
+  private async ifEmailAlreadyTakenThrowsException(
+    email: string,
+  ): Promise<void> {
+    const emailAlreadyTaken = await this.userModel.findOne({ email });
+
+    if (emailAlreadyTaken)
+      throw new HttpException(
+        `Email: ${email} already taken`,
+        HttpStatus.CONFLICT,
+      );
+  }
+
   async create({ name, email, password }: CreateUserDto): Promise<void> {
+    await this.ifEmailAlreadyTakenThrowsException(email);
+
     await this.userModel.create({ name, email, password });
   }
 
